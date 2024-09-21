@@ -1,7 +1,11 @@
+!pip install EbookLib
+!pip install BeautifulSoup4
+
 import os
 import ebooklib
 from ebooklib import epub
 from bs4 import BeautifulSoup
+import re  # Import the regex module for improved keyword matching
 
 # Define your list of keywords separated by commas
 keywords = "Music, Art, Pitch, Concert, Jazz, Symphony, Instrument, Melody".split(", ")
@@ -32,9 +36,10 @@ def find_relevant_sections(texts, keywords):
         collected_texts[keyword] = []
         text_counts[keyword] = 0
         combined_counts[keyword] = 0
+        keyword_pattern = r'\b' + re.escape(keyword) + r'\b'  # Use regex to match only full words
 
         for i, text in enumerate(texts):
-            if keyword.lower() in text.lower():
+            if re.search(keyword_pattern, text, re.IGNORECASE):  # Use regex search with case-insensitive match
                 previous_paragraph = texts[i - 1] if i > 0 else ""
                 target_paragraph = text
                 next_paragraph = texts[i + 1] if i + 1 < len(texts) else ""
@@ -62,13 +67,15 @@ if check_file_path(epub_path):
     print("Extraction Summary:")
     for keyword in keywords:
         print(f"Keyword: {keyword}")
-        print(f"  Total extracted sections: {text_counts[keyword]}")
-        print(f"  Sections combined due to overlap: {combined_counts[keyword]}")
+        print(f"Total extracted sections: {text_counts[keyword]}")
+        print(f"Sections combined due to overlap: {combined_counts[keyword]}")
         print("-" * 80)
-    
+
     # Print each relevant section separated by a line for each keyword
     for keyword in keywords:
         print(f"\nSections for '{keyword}':")
         for section in relevant_sections[keyword]:
             print(section)
             print("\n" + "-"*80 + "\n")
+else:
+    print("File not found. Please check the file path and try again.")
